@@ -344,14 +344,44 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
+  Future<bool> _onWillPop() async {
+    final shouldExit = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Exit App'),
+        content: const Text('Do you want to exit the app?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(true),
+            child: const Text('Exit'),
+          ),
+        ],
+      ),
+    );
+    return shouldExit ?? false;
+  }
+
   @override
   Widget build(BuildContext context) {
     final userProvider = Provider.of<UserProvider>(context);
 
-    return Scaffold(
-      appBar: _selectedIndex == 0
-          ? null
-          : AppBar(
+    return PopScope(
+      canPop: false,
+      onPopInvoked: (didPop) async {
+        if (didPop) return;
+        final shouldPop = await _onWillPop();
+        if (shouldPop && context.mounted) {
+          Navigator.of(context).pop();
+        }
+      },
+      child: Scaffold(
+        appBar: _selectedIndex == 0
+            ? null
+            : AppBar(
               title: Text(_selectedIndex == 1 ? 'Tasks' : 'Statistics'),
               actions: [
                 PopupMenuButton<String>(
@@ -392,18 +422,19 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
               ],
             ),
-      body: _getSelectedScreen(),
-      bottomNavigationBar: NavigationBar(
-        selectedIndex: _selectedIndex,
-        onDestinationSelected: _onNavigationItemTapped,
-        destinations: const [
-          NavigationDestination(
-            icon: Icon(Icons.calendar_today),
-            label: 'Schedule',
-          ),
-          NavigationDestination(icon: Icon(Icons.task_alt), label: 'Tasks'),
-          NavigationDestination(icon: Icon(Icons.bar_chart), label: 'Stats'),
-        ],
+        body: _getSelectedScreen(),
+        bottomNavigationBar: NavigationBar(
+          selectedIndex: _selectedIndex,
+          onDestinationSelected: _onNavigationItemTapped,
+          destinations: const [
+            NavigationDestination(
+              icon: Icon(Icons.calendar_today),
+              label: 'Schedule',
+            ),
+            NavigationDestination(icon: Icon(Icons.task_alt), label: 'Tasks'),
+            NavigationDestination(icon: Icon(Icons.bar_chart), label: 'Stats'),
+          ],
+        ),
       ),
     );
   }
