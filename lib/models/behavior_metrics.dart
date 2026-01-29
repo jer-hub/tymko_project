@@ -1,3 +1,5 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+
 class BehaviorMetrics {
   final String studentId;
   final DateTime date;
@@ -55,5 +57,31 @@ class BehaviorMetrics {
               .toList() ??
           [],
     );
+  }
+  // --- Firestore CRUD methods ---
+  static CollectionReference get _collection =>
+      FirebaseFirestore.instance.collection('behavior_metrics');
+
+  Future<void> save() async {
+    await _collection
+        .doc('${studentId}_${date.toIso8601String()}')
+        .set(toJson());
+  }
+
+  Future<void> delete() async {
+    await _collection.doc('${studentId}_${date.toIso8601String()}').delete();
+  }
+
+  static Future<List<BehaviorMetrics>> getAllForStudent(
+    String studentId,
+  ) async {
+    final query = await _collection
+        .where('studentId', isEqualTo: studentId)
+        .get();
+    return query.docs
+        .map(
+          (doc) => BehaviorMetrics.fromJson(doc.data() as Map<String, dynamic>),
+        )
+        .toList();
   }
 }

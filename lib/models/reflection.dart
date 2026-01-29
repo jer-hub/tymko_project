@@ -1,3 +1,5 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+
 class Reflection {
   final String id;
   final String studentId;
@@ -39,5 +41,25 @@ class Reflection {
       improvements: json['improvements'] as String? ?? '',
       productivityRating: json['productivityRating'] as int? ?? 3,
     );
+  }
+  // --- Firestore CRUD methods ---
+  static CollectionReference get _collection =>
+      FirebaseFirestore.instance.collection('reflections');
+
+  Future<void> save() async {
+    await _collection.doc(id).set(toJson());
+  }
+
+  Future<void> delete() async {
+    await _collection.doc(id).delete();
+  }
+
+  static Future<List<Reflection>> getAllForStudent(String studentId) async {
+    final query = await _collection
+        .where('studentId', isEqualTo: studentId)
+        .get();
+    return query.docs
+        .map((doc) => Reflection.fromJson(doc.data() as Map<String, dynamic>))
+        .toList();
   }
 }

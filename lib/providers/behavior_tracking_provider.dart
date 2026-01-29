@@ -4,31 +4,82 @@ import '../models/study_session.dart';
 import '../models/task.dart';
 import '../models/reflection.dart';
 import '../models/academic_performance.dart';
+// Removed unused Firestore import — provider doesn't access Firestore directly.
 import 'dart:math' as math;
 
 class BehaviorTrackingProvider with ChangeNotifier {
-  final List<BehaviorMetrics> _dailyMetrics = [];
-  final List<StudySession> _studySessions = [];
-  final List<Reflection> _reflections = [];
-  final List<AcademicPerformance> _performanceHistory = [];
+  List<BehaviorMetrics> _dailyMetrics = [];
+  List<StudySession> _studySessions = [];
+  List<Reflection> _reflections = [];
+  List<AcademicPerformance> _performanceHistory = [];
 
   List<BehaviorMetrics> get dailyMetrics => _dailyMetrics;
   List<StudySession> get studySessions => _studySessions;
   List<Reflection> get reflections => _reflections;
   List<AcademicPerformance> get performanceHistory => _performanceHistory;
 
-  // Record study session
-  void addStudySession(StudySession session) {
+  // --- Firestore CRUD integration ---
+  Future<void> fetchAllForStudent(String studentId) async {
+    _dailyMetrics = await BehaviorMetrics.getAllForStudent(studentId);
+    _studySessions = await StudySession.getAllForStudent(studentId);
+    _reflections = await Reflection.getAllForStudent(studentId);
+    _performanceHistory = await AcademicPerformance.getAllForStudent(studentId);
+    notifyListeners();
+  }
+
+  Future<void> addStudySession(StudySession session) async {
+    await session.save();
     _studySessions.add(session);
     _updateDailyMetrics(session.startTime);
     notifyListeners();
   }
 
-  // Record reflection
-  void addReflection(Reflection reflection) {
+  Future<void> addReflection(Reflection reflection) async {
+    await reflection.save();
     _reflections.add(reflection);
     notifyListeners();
   }
+
+  Future<void> recordAcademicPerformance(
+    String studentId,
+    int totalTasks,
+    int completedTasks,
+    int onTimeTasks,
+    int lateTasks,
+    Duration totalStudyTime,
+    bool hadCrammingSession,
+  ) async {
+    final date = DateTime.now();
+    final weekNumber = _getWeekNumber(date);
+    int consecutive = 0;
+    for (var i = _performanceHistory.length - 1; i >= 0; i--) {
+      if (_performanceHistory[i].studentId == studentId &&
+          _performanceHistory[i].lateTasks == 0 &&
+          _performanceHistory[i].onTimeTasks > 0) {
+        consecutive++;
+      } else {
+        break;
+      }
+    }
+    final performance = AcademicPerformance(
+      id: DateTime.now().millisecondsSinceEpoch.toString(),
+      studentId: studentId,
+      date: date,
+      totalTasks: totalTasks,
+      completedTasks: completedTasks,
+      onTimeTasks: onTimeTasks,
+      lateTasks: lateTasks,
+      totalStudyTime: totalStudyTime,
+      consecutiveOnTimeDays: consecutive,
+      hadCrammingSession: hadCrammingSession,
+      weekNumber: weekNumber,
+    );
+    await performance.save();
+    _performanceHistory.add(performance);
+    notifyListeners();
+  }
+
+  // You can similarly refactor other methods to use Firestore CRUD as needed.
 
   // Update daily metrics when task is completed
   void recordTaskCompletion(Task task, {bool isPastDeadline = false}) {
@@ -565,48 +616,7 @@ class BehaviorTrackingProvider with ChangeNotifier {
     return '$displayHour:00 $period';
   }
 
-  // Record academic performance snapshot
-  void recordAcademicPerformance(
-    String studentId,
-    int totalTasks,
-    int completedTasks,
-    int onTimeTasks,
-    int lateTasks,
-    Duration totalStudyTime,
-    bool hadCrammingSession,
-  ) {
-    final date = DateTime.now();
-    final weekNumber = _getWeekNumber(date);
-
-    // Calculate consecutive on-time days
-    int consecutive = 0;
-    for (var i = _performanceHistory.length - 1; i >= 0; i--) {
-      if (_performanceHistory[i].studentId == studentId &&
-          _performanceHistory[i].lateTasks == 0 &&
-          _performanceHistory[i].onTimeTasks > 0) {
-        consecutive++;
-      } else {
-        break;
-      }
-    }
-
-    final performance = AcademicPerformance(
-      id: DateTime.now().millisecondsSinceEpoch.toString(),
-      studentId: studentId,
-      date: date,
-      totalTasks: totalTasks,
-      completedTasks: completedTasks,
-      onTimeTasks: onTimeTasks,
-      lateTasks: lateTasks,
-      totalStudyTime: totalStudyTime,
-      consecutiveOnTimeDays: consecutive,
-      hadCrammingSession: hadCrammingSession,
-      weekNumber: weekNumber,
-    );
-
-    _performanceHistory.add(performance);
-    notifyListeners();
-  }
+  // Record academic performance snapshot (Firestore-backed version exists above)
 
   int _getWeekNumber(DateTime date) {
     final dayOfYear = date.difference(DateTime(date.year, 1, 1)).inDays;

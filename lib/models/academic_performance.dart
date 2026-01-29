@@ -1,3 +1,5 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+
 class AcademicPerformance {
   final String id;
   final String studentId;
@@ -67,6 +69,31 @@ class AcademicPerformance {
       hadCrammingSession: json['hadCrammingSession'] as bool? ?? false,
       weekNumber: json['weekNumber'] as int,
     );
+  }
+  // --- Firestore CRUD methods ---
+  static CollectionReference get _collection =>
+      FirebaseFirestore.instance.collection('academic_performance');
+
+  Future<void> save() async {
+    await _collection.doc(id).set(toJson());
+  }
+
+  Future<void> delete() async {
+    await _collection.doc(id).delete();
+  }
+
+  static Future<List<AcademicPerformance>> getAllForStudent(
+    String studentId,
+  ) async {
+    final query = await _collection
+        .where('studentId', isEqualTo: studentId)
+        .get();
+    return query.docs
+        .map(
+          (doc) =>
+              AcademicPerformance.fromJson(doc.data() as Map<String, dynamic>),
+        )
+        .toList();
   }
 }
 

@@ -1,3 +1,5 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+
 class StudySession {
   final String id;
   final String taskId;
@@ -49,5 +51,23 @@ class StudySession {
       breakCount: json['breakCount'] as int? ?? 0,
       sessionType: json['sessionType'] as String? ?? 'custom',
     );
+  }
+  // --- Firestore CRUD methods ---
+  static CollectionReference get _collection =>
+      FirebaseFirestore.instance.collection('study_sessions');
+
+  Future<void> save() async {
+    await _collection.doc(id).set(toJson());
+  }
+
+  Future<void> delete() async {
+    await _collection.doc(id).delete();
+  }
+
+  static Future<List<StudySession>> getAllForStudent(String studentId) async {
+    final query = await _collection.where('taskId', isEqualTo: studentId).get();
+    return query.docs
+        .map((doc) => StudySession.fromJson(doc.data() as Map<String, dynamic>))
+        .toList();
   }
 }

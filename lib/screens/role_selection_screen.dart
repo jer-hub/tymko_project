@@ -40,7 +40,7 @@ class RoleSelectionScreen extends StatelessWidget {
                       shape: BoxShape.circle,
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.black.withOpacity(0.1),
+                          color: Colors.black.withAlpha((0.1 * 255).round()),
                           blurRadius: 20,
                           offset: const Offset(0, 10),
                         ),
@@ -146,7 +146,7 @@ class RoleSelectionScreen extends StatelessWidget {
 
                   // Info card
                   Card(
-                    color: Colors.white.withOpacity(0.9),
+                    color: Colors.white.withAlpha((0.9 * 255).round()),
                     child: Padding(
                       padding: const EdgeInsets.all(16),
                       child: Column(
@@ -246,7 +246,7 @@ class RoleSelectionScreen extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
-                  color: color.withOpacity(0.1),
+                  color: color.withAlpha((0.1 * 255).round()),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Icon(icon, size: 32, color: color),

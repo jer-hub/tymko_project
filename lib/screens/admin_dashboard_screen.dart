@@ -115,9 +115,9 @@ class AdminDashboardScreen extends StatelessWidget {
                           const Text('No data available')
                         else
                           ...tasksByCategory.entries.map((entry) {
+                            final count = entry.value.length;
                             final percentage = totalTasks > 0
-                                ? (entry.value / totalTasks * 100)
-                                      .toStringAsFixed(1)
+                                ? (count / totalTasks * 100).toStringAsFixed(1)
                                 : '0.0';
                             return Padding(
                               padding: const EdgeInsets.only(bottom: 12),
@@ -136,7 +136,7 @@ class AdminDashboardScreen extends StatelessWidget {
                                         ),
                                       ),
                                       Text(
-                                        '${entry.value} ($percentage%)',
+                                        '$count tasks ($percentage%)',
                                         style: TextStyle(
                                           fontSize: 14,
                                           color: Colors.grey[600],
@@ -146,7 +146,9 @@ class AdminDashboardScreen extends StatelessWidget {
                                   ),
                                   const SizedBox(height: 8),
                                   LinearProgressIndicator(
-                                    value: entry.value / totalTasks,
+                                    value: totalTasks > 0
+                                        ? (count / totalTasks)
+                                        : 0.0,
                                     backgroundColor: Colors.grey[200],
                                     minHeight: 8,
                                     borderRadius: BorderRadius.circular(4),

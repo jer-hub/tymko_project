@@ -216,7 +216,7 @@ class _DateRangeTasksScreenState extends State<DateRangeTasksScreen> {
               color: Theme.of(context).colorScheme.surface,
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.05),
+                  color: Colors.black.withAlpha((0.05 * 255).round()),
                   blurRadius: 4,
                   offset: const Offset(0, 2),
                 ),
@@ -314,7 +314,7 @@ class _DateRangeTasksScreenState extends State<DateRangeTasksScreen> {
                 // Filter dropdown
                 Expanded(
                   child: DropdownButtonFormField<String>(
-                    value: _filterType,
+                    initialValue: _filterType,
                     decoration: const InputDecoration(
                       labelText: 'Filter',
                       prefixIcon: Icon(Icons.filter_list, size: 20),
@@ -348,7 +348,7 @@ class _DateRangeTasksScreenState extends State<DateRangeTasksScreen> {
                 // Sort dropdown
                 Expanded(
                   child: DropdownButtonFormField<String>(
-                    value: _sortBy,
+                    initialValue: _sortBy,
                     decoration: const InputDecoration(
                       labelText: 'Sort By',
                       prefixIcon: Icon(Icons.sort, size: 20),
@@ -439,9 +439,8 @@ class _DateRangeTasksScreenState extends State<DateRangeTasksScreen> {
                       return Card(
                         margin: const EdgeInsets.only(bottom: 8),
                         color: isSelected
-                            ? Theme.of(
-                                context,
-                              ).colorScheme.primaryContainer.withOpacity(0.3)
+                            ? Theme.of(context).colorScheme.primaryContainer
+                                  .withAlpha((0.3 * 255).round())
                             : null,
                         child: ListTile(
                           leading: _isSelectionMode
@@ -498,7 +497,9 @@ class _DateRangeTasksScreenState extends State<DateRangeTasksScreen> {
                                         vertical: 2,
                                       ),
                                       decoration: BoxDecoration(
-                                        color: Colors.blue.withOpacity(0.1),
+                                        color: Colors.blue.withAlpha(
+                                          (0.1 * 255).round(),
+                                        ),
                                         borderRadius: BorderRadius.circular(4),
                                       ),
                                       child: Text(

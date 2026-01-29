@@ -30,9 +30,7 @@ class _PomodoroTimerScreenState extends State<PomodoroTimerScreen> {
   }
 
   void _startTimer() {
-    if (_sessionStartTime == null) {
-      _sessionStartTime = DateTime.now();
-    }
+    _sessionStartTime ??= DateTime.now();
 
     setState(() {
       _isRunning = true;
@@ -97,7 +95,7 @@ class _PomodoroTimerScreenState extends State<PomodoroTimerScreen> {
         content: Text(
           _isWorkSession
               ? 'Time to focus! Ready for another session?'
-              : 'Great work! Time for a ${(_completedPomodoros % 4 == 0) ? "long" : "short"} break.',
+              : 'Great work! Time for a ${_completedPomodoros % 4 == 0 ? "long" : "short"} break.',
         ),
         actions: [
           TextButton(
@@ -213,7 +211,7 @@ class _PomodoroTimerScreenState extends State<PomodoroTimerScreen> {
                         ),
                         const SizedBox(height: 8),
                         Text(
-                          '${_completedPomodoros} pomodoros completed',
+                          '$_completedPomodoros pomodoros completed',
                           style: TextStyle(
                             fontSize: 14,
                             color: Colors.grey[600],

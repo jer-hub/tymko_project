@@ -74,7 +74,7 @@ class CorrelationChart extends StatelessWidget {
                   ),
                 ),
               );
-            }).toList(),
+            }),
             // Trend line indicator
             if (correlation.correlationCoefficient.abs() > 0.2)
               CustomPaint(
@@ -155,7 +155,7 @@ class TrendLinePainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final paint = Paint()
-      ..color = color.withOpacity(0.5)
+      ..color = color.withAlpha((0.5 * 255).round())
       ..strokeWidth = 2
       ..style = PaintingStyle.stroke;
 

@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "802254430913",
+    "project_id": "tymko-15786",
+    "storage_bucket": "tymko-15786.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:802254430913:android:7074e239845c6e331bea40",
+        "android_client_info": {
+          "package_name": "com.example.tymko_project"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyB4xZ4cXU0a-5EVcq75UIKbKbwGKa0G3qs"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

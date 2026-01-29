@@ -1,3 +1,5 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+
 class Subtask {
   final String id;
   final String title;
@@ -5,17 +7,17 @@ class Subtask {
 
   Subtask({required this.id, required this.title, this.isCompleted = false});
 
-  Map<String, dynamic> toJson() {
-    return {'id': id, 'title': title, 'isCompleted': isCompleted};
-  }
+  Map<String, dynamic> toJson() => {
+    'id': id,
+    'title': title,
+    'isCompleted': isCompleted,
+  };
 
-  factory Subtask.fromJson(Map<String, dynamic> json) {
-    return Subtask(
-      id: json['id'] as String,
-      title: json['title'] as String,
-      isCompleted: json['isCompleted'] as bool? ?? false,
-    );
-  }
+  factory Subtask.fromJson(Map<String, dynamic> json) => Subtask(
+    id: json['id'] as String,
+    title: json['title'] as String,
+    isCompleted: json['isCompleted'] as bool? ?? false,
+  );
 }
 
 class Task {
@@ -23,26 +25,28 @@ class Task {
   final String studentId;
   final String title;
   final String? description;
-  final DateTime dateTime;
+  final DateTime dateTime; // alias used across the app (now non-nullable)
   final DateTime? endTime;
-  final String? category;
   final bool isCompleted;
   final DateTime? completedAt;
   final bool isRecurring;
-  final String? recurringPattern; // 'daily', 'weekly', 'monthly'
+  final String? recurringPattern;
   final int? estimatedDuration; // in minutes
   final int? actualDuration; // in minutes
   final List<Subtask> subtasks;
-  final int priority; // 1-5, 5 being highest
+  final int priority;
+  final String? category;
+
+  // Keep dueDate for backward compatibility (maps to dateTime)
+  DateTime get dueDate => dateTime;
 
   Task({
     required this.id,
     required this.studentId,
     required this.title,
     this.description,
-    required this.dateTime,
+    DateTime? dateTime,
     this.endTime,
-    this.category,
     this.isCompleted = false,
     this.completedAt,
     this.isRecurring = false,
@@ -51,7 +55,8 @@ class Task {
     this.actualDuration,
     this.subtasks = const [],
     this.priority = 3,
-  });
+    this.category,
+  }) : dateTime = dateTime ?? DateTime.now();
 
   Task copyWith({
     String? id,
@@ -60,7 +65,6 @@ class Task {
     String? description,
     DateTime? dateTime,
     DateTime? endTime,
-    String? category,
     bool? isCompleted,
     DateTime? completedAt,
     bool? isRecurring,
@@ -69,6 +73,7 @@ class Task {
     int? actualDuration,
     List<Subtask>? subtasks,
     int? priority,
+    String? category,
   }) {
     return Task(
       id: id ?? this.id,
@@ -77,7 +82,6 @@ class Task {
       description: description ?? this.description,
       dateTime: dateTime ?? this.dateTime,
       endTime: endTime ?? this.endTime,
-      category: category ?? this.category,
       isCompleted: isCompleted ?? this.isCompleted,
       completedAt: completedAt ?? this.completedAt,
       isRecurring: isRecurring ?? this.isRecurring,
@@ -86,6 +90,7 @@ class Task {
       actualDuration: actualDuration ?? this.actualDuration,
       subtasks: subtasks ?? this.subtasks,
       priority: priority ?? this.priority,
+      category: category ?? this.category,
     );
   }
 
@@ -97,7 +102,6 @@ class Task {
       'description': description,
       'dateTime': dateTime.toIso8601String(),
       'endTime': endTime?.toIso8601String(),
-      'category': category,
       'isCompleted': isCompleted,
       'completedAt': completedAt?.toIso8601String(),
       'isRecurring': isRecurring,
@@ -106,6 +110,7 @@ class Task {
       'actualDuration': actualDuration,
       'subtasks': subtasks.map((s) => s.toJson()).toList(),
       'priority': priority,
+      'category': category,
     };
   }
 
@@ -113,13 +118,14 @@ class Task {
     return Task(
       id: json['id'] as String,
       studentId: json['studentId'] as String? ?? '',
-      title: json['title'] as String,
-      description: json['description'] as String?,
-      dateTime: DateTime.parse(json['dateTime'] as String),
+      title: json['title'] as String? ?? '',
+      description: json['description'] as String? ?? '',
+      dateTime: json['dateTime'] != null
+          ? DateTime.parse(json['dateTime'] as String)
+          : DateTime.now(),
       endTime: json['endTime'] != null
           ? DateTime.parse(json['endTime'] as String)
           : null,
-      category: json['category'] as String?,
       isCompleted: json['isCompleted'] as bool? ?? false,
       completedAt: json['completedAt'] != null
           ? DateTime.parse(json['completedAt'] as String)
@@ -134,6 +140,27 @@ class Task {
               .toList() ??
           [],
       priority: json['priority'] as int? ?? 3,
+      category: json['category'] as String?,
     );
+  }
+
+  static CollectionReference get _collection =>
+      FirebaseFirestore.instance.collection('tasks');
+
+  Future<void> save() async {
+    await _collection.doc(id).set(toJson());
+  }
+
+  Future<void> delete() async {
+    await _collection.doc(id).delete();
+  }
+
+  static Future<List<Task>> getAllForStudent(String studentId) async {
+    final query = await _collection
+        .where('studentId', isEqualTo: studentId)
+        .get();
+    return query.docs
+        .map((doc) => Task.fromJson(doc.data() as Map<String, dynamic>))
+        .toList();
   }
 }

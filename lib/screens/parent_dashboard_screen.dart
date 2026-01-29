@@ -453,7 +453,7 @@ class _ParentDashboardScreenState extends State<ParentDashboardScreen> {
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
           decoration: BoxDecoration(
-            color: color.withOpacity(0.2),
+            color: color.withAlpha((0.2 * 255).round()),
             borderRadius: BorderRadius.circular(12),
           ),
           child: Text(
@@ -667,9 +667,11 @@ class _ParentDashboardScreenState extends State<ParentDashboardScreen> {
               Container(
                 padding: const EdgeInsets.all(10),
                 decoration: BoxDecoration(
-                  color: patternColor.withOpacity(0.1),
+                  color: patternColor.withAlpha((0.1 * 255).round()),
                   borderRadius: BorderRadius.circular(8),
-                  border: Border.all(color: patternColor.withOpacity(0.3)),
+                  border: Border.all(
+                    color: patternColor.withAlpha((0.3 * 255).round()),
+                  ),
                 ),
                 child: Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -685,7 +687,7 @@ class _ParentDashboardScreenState extends State<ParentDashboardScreen> {
                         recommendation,
                         style: TextStyle(
                           fontSize: 12,
-                          color: patternColor.withOpacity(0.9),
+                          color: patternColor.withAlpha((0.9 * 255).round()),
                         ),
                         maxLines: 3,
                         overflow: TextOverflow.ellipsis,
@@ -822,7 +824,7 @@ class _ParentDashboardScreenState extends State<ParentDashboardScreen> {
             Container(
               padding: const EdgeInsets.all(10),
               decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.7),
+                color: Colors.white.withAlpha((0.7 * 255).round()),
                 borderRadius: BorderRadius.circular(8),
               ),
               child: Column(
@@ -875,7 +877,7 @@ class _ParentDashboardScreenState extends State<ParentDashboardScreen> {
               'Last updated: ${DateFormat('MMM d, h:mm a').format(alert['timestamp'])}',
               style: TextStyle(
                 fontSize: 11,
-                color: textColor.withOpacity(0.7),
+                color: textColor.withAlpha((0.7 * 255).round()),
                 fontStyle: FontStyle.italic,
               ),
             ),

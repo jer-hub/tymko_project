@@ -20,9 +20,9 @@ class _AddTaskDialogState extends State<AddTaskDialog> {
   DateTime _selectedDate = DateTime.now();
   TimeOfDay _selectedTime = TimeOfDay.now();
   String? _selectedCategory;
-  bool _isRecurring = false;
+  final bool _isRecurring = false;
   String? _recurringPattern;
-  int _priority = 3;
+  final int _priority = 3;
   int? _estimatedDuration;
 
   final List<String> _categories = [
@@ -179,7 +179,7 @@ class _AddTaskDialogState extends State<AddTaskDialog> {
 
                 // Category dropdown
                 DropdownButtonFormField<String>(
-                  value: _selectedCategory,
+                  initialValue: _selectedCategory,
                   decoration: const InputDecoration(
                     labelText: 'Category (optional)',
                     border: OutlineInputBorder(),

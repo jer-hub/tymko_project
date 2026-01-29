@@ -47,7 +47,10 @@ class PatternWarningBanner extends StatelessWidget {
           decoration: BoxDecoration(
             color: backgroundColor,
             borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: textColor.withOpacity(0.3), width: 2),
+            border: Border.all(
+              color: textColor.withAlpha((0.3 * 255).round()),
+              width: 2,
+            ),
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,

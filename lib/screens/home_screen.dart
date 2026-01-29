@@ -70,7 +70,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   color: Theme.of(context).colorScheme.surface,
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withOpacity(0.05),
+                      color: Colors.black.withAlpha((0.05 * 255).round()),
                       blurRadius: 10,
                       offset: const Offset(0, 2),
                     ),
@@ -371,6 +371,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
     return PopScope(
       canPop: false,
+      // ignore: deprecated_member_use
       onPopInvoked: (didPop) async {
         if (didPop) return;
         final shouldPop = await _onWillPop();
@@ -382,46 +383,46 @@ class _HomeScreenState extends State<HomeScreen> {
         appBar: _selectedIndex == 0
             ? null
             : AppBar(
-              title: Text(_selectedIndex == 1 ? 'Tasks' : 'Statistics'),
-              actions: [
-                PopupMenuButton<String>(
-                  icon: const Icon(Icons.more_vert),
-                  onSelected: (value) {
-                    if (value == 'switch_role') {
-                      Navigator.pushNamedAndRemoveUntil(
-                        context,
-                        '/',
-                        (route) => false,
-                      );
-                    }
-                  },
-                  itemBuilder: (context) => [
-                    PopupMenuItem(
-                      value: 'profile',
-                      child: Row(
-                        children: [
-                          const Icon(Icons.person, size: 20),
-                          const SizedBox(width: 12),
-                          Text(userProvider.currentUser?.name ?? 'Student'),
-                        ],
+                title: Text(_selectedIndex == 1 ? 'Tasks' : 'Statistics'),
+                actions: [
+                  PopupMenuButton<String>(
+                    icon: const Icon(Icons.more_vert),
+                    onSelected: (value) {
+                      if (value == 'switch_role') {
+                        Navigator.pushNamedAndRemoveUntil(
+                          context,
+                          '/',
+                          (route) => false,
+                        );
+                      }
+                    },
+                    itemBuilder: (context) => [
+                      PopupMenuItem(
+                        value: 'profile',
+                        enabled: false,
+                        child: Row(
+                          children: [
+                            const Icon(Icons.person, size: 20),
+                            const SizedBox(width: 12),
+                            Text(userProvider.currentUser?.name ?? 'Student'),
+                          ],
+                        ),
                       ),
-                      enabled: false,
-                    ),
-                    const PopupMenuDivider(),
-                    const PopupMenuItem(
-                      value: 'switch_role',
-                      child: Row(
-                        children: [
-                          Icon(Icons.logout, size: 20),
-                          SizedBox(width: 12),
-                          Text('Switch Role'),
-                        ],
+                      const PopupMenuDivider(),
+                      const PopupMenuItem(
+                        value: 'switch_role',
+                        child: Row(
+                          children: [
+                            Icon(Icons.logout, size: 20),
+                            SizedBox(width: 12),
+                            Text('Switch Role'),
+                          ],
+                        ),
                       ),
-                    ),
-                  ],
-                ),
-              ],
-            ),
+                    ],
+                  ),
+                ],
+              ),
         body: _getSelectedScreen(),
         bottomNavigationBar: NavigationBar(
           selectedIndex: _selectedIndex,
