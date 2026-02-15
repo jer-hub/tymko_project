@@ -1,8 +1,24 @@
 import 'package:flutter/material.dart';
+
 import '../models/task.dart';
+import '../utils/deadline_notification_service.dart';
+import '../utils/local_notification_helper.dart';
+import '../utils/task_storage.dart';
 
 class TaskProvider with ChangeNotifier {
   final List<Task> _tasks = [];
+  final TaskStorage _storage = TaskStorage();
+  String? _currentStudentId;
+
+  TaskProvider() {
+    loadTasksFromStorage();
+  }
+
+  /// Set the current student ID so phone notifications are filtered.
+  void setCurrentStudentId(String? studentId) {
+    _currentStudentId = studentId;
+    _rescheduleNotifications();
+  }
 
   List<Task> get tasks => _tasks;
 
@@ -41,6 +57,7 @@ class TaskProvider with ChangeNotifier {
 
   void addTask(Task task) {
     _tasks.add(task);
+    _saveTasks();
     notifyListeners();
   }
 
@@ -48,12 +65,14 @@ class TaskProvider with ChangeNotifier {
     final index = _tasks.indexWhere((t) => t.id == task.id);
     if (index != -1) {
       _tasks[index] = task;
+      _saveTasks();
       notifyListeners();
     }
   }
 
   void deleteTask(String id) {
     _tasks.removeWhere((task) => task.id == id);
+    _saveTasks();
     notifyListeners();
   }
 
@@ -65,6 +84,7 @@ class TaskProvider with ChangeNotifier {
         isCompleted: !_tasks[index].isCompleted,
         completedAt: !_tasks[index].isCompleted ? now : null,
       );
+      _saveTasks();
       notifyListeners();
     }
   }
@@ -85,6 +105,7 @@ class TaskProvider with ChangeNotifier {
       }).toList();
 
       _tasks[taskIndex] = task.copyWith(subtasks: updatedSubtasks);
+      _saveTasks();
       notifyListeners();
     }
   }
@@ -95,7 +116,33 @@ class TaskProvider with ChangeNotifier {
       final task = _tasks[taskIndex];
       final updatedSubtasks = [...task.subtasks, subtask];
       _tasks[taskIndex] = task.copyWith(subtasks: updatedSubtasks);
+      _saveTasks();
       notifyListeners();
+    }
+  }
+
+  Future<void> loadTasksFromStorage() async {
+    final loaded = await _storage.loadTasks();
+    _tasks.clear();
+    _tasks.addAll(loaded);
+    _rescheduleNotifications();
+    notifyListeners();
+  }
+
+  Future<void> _saveTasks() async {
+    await _storage.saveTasks(_tasks);
+    _rescheduleNotifications();
+  }
+
+  /// Reschedule all phone notifications based on current tasks.
+  Future<void> _rescheduleNotifications() async {
+    try {
+      await LocalNotificationHelper.scheduleAllDeadlineNotifications(
+        _tasks,
+        studentId: _currentStudentId,
+      );
+    } catch (e) {
+      debugPrint('Failed to schedule notifications: $e');
     }
   }
 
@@ -114,5 +161,35 @@ class TaskProvider with ChangeNotifier {
       categoryCount[category] = (categoryCount[category] ?? 0) + 1;
     }
     return categoryCount;
+  }
+
+  // Deadline notification methods
+
+  List<DeadlineNotification> getDeadlineNotifications({String? studentId}) {
+    return DeadlineNotificationService.getNotifications(
+      _tasks,
+      studentId: studentId,
+    );
+  }
+
+  List<DeadlineNotification> getOverdueNotifications({String? studentId}) {
+    return DeadlineNotificationService.getOverdueNotifications(
+      _tasks,
+      studentId: studentId,
+    );
+  }
+
+  List<DeadlineNotification> getUpcomingDeadlines({String? studentId}) {
+    return DeadlineNotificationService.getUpcomingNotifications(
+      _tasks,
+      studentId: studentId,
+    );
+  }
+
+  Map<DeadlineUrgency, int> getDeadlineCounts({String? studentId}) {
+    return DeadlineNotificationService.getNotificationCounts(
+      _tasks,
+      studentId: studentId,
+    );
   }
 }

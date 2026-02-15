@@ -4,8 +4,11 @@ import 'providers/task_provider.dart';
 import 'providers/user_provider.dart';
 import 'providers/behavior_tracking_provider.dart';
 import 'screens/role_selection_screen.dart';
+import 'utils/local_notification_helper.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await LocalNotificationHelper.initialize();
   runApp(const MyApp());
 }
 
